@@ -1,4 +1,6 @@
 
+import os
+import gdown
 import pandas as pd
 import joblib
 from flask import Flask, request, jsonify
@@ -8,10 +10,22 @@ from flask_cors import CORS
 superkart_api = Flask("superkart_sales_api")
 CORS(superkart_api)
 
+# Google Drive public model link
+GOOGLE_DRIVE_MODEL_URL = "https://drive.google.com/file/d/1DXtUE7A-OYzQf8rz4TG6_C4Izjdf6uAk/view?usp=drive_link"
+
+MODEL_PATH = "superkart_random_forest_tuned.joblib"
+
+# Download the model if it is not already available
+if not os.path.exists(MODEL_PATH):
+		gdown.download(GOOGLE_DRIVE_MODEL_URL,
+				MODEL_PATH,
+				quiet=False
+				)
+
 # Load the trained Tuned Random Forest model
-model = joblib.load(
-    "/content/drive/My Drive/Colab Notebooks/SuperKartProject/deployment/superkart_random_forest_tuned.joblib"
-)
+model = joblib.load(MODEL_PATH)
+
+print("Model loaded successfully.")
 
 # Health Check Route
 @superkart_api.get('/')
@@ -33,11 +47,13 @@ def predict_sales():
         required_fields = [
             'Product_Weight',
             'Product_Sugar_Content',
-            'Product_Type',
+            'Product_Allocated_Area',
             'Product_MRP',
             'Store_Size',
             'Store_Location_City_Type',
-            'Store_Type'
+            'Store_Type',
+            'Store_Age_Years',
+            'Product_Type_Category'
         ]
 
         # Check for missing fields
@@ -53,14 +69,17 @@ def predict_sales():
 
         # Prepare Input Record
         sample = {
-            'Product_Weight': float(data['Product_Weight']),
-            'Product_Sugar_Content': data['Product_Sugar_Content'],
-            'Product_Type': data['Product_Type'],
-            'Product_MRP': float(data['Product_MRP']),
-            'Store_Size': data['Store_Size'],
-            'Store_Location_City_Type': data['Store_Location_City_Type'],
-            'Store_Type': data['Store_Type']
-        }
+                'Product_Weight':float(data['Product_Weight']),
+                'Product_Sugar_Content':data['Product_Sugar_Content'],
+                'Product_Allocated_Area':float(data['Product_Allocated_Area']),
+                'Product_MRP':float(data['Product_MRP']),
+                'Store_Size':data['Store_Size'],
+                'Store_Location_City_Type':data['Store_Location_City_Type'],
+                'Store_Type':data['Store_Type'],
+                'Store_Age_Years':int(data['Store_Age_Years']),
+                'Product_Type_Category':data['Product_Type_Category']
+                }
+
 
         # Convert to DataFrame
         input_df = pd.DataFrame([sample])
