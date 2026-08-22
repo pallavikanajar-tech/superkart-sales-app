@@ -43,7 +43,8 @@ product_data = {
 if st.button("Predict", type='primary'):
     try:
         response = requests.post(
-            "https://Pkanajar-superkart-sales-backend.space/v1/predict",
+            #"https://Pkanajar-superkart-sales-backend.space/v1/predict",
+            "https://humble-space-sniffle-jr4wgqpg4rqjfj66-7860.app.github.dev/v1/predict",
             json=product_data
         )
         if response.status_code == 200:
